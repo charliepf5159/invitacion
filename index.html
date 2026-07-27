@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis XV Años - Thaily & Emir</title>
+
+  <!-- Tipografía elegante de Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Montserrat:wght@300;400;600&family=Great+Vibes&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      /* NUEVO FONDO CON LIRIO Y ONDAS DE AGUA */
+      background-color: #0d1a15;
+      background-image: url('descarga.jpg'); /* Asegúrate de que el archivo conserve este nombre o cámbialo aquí */
+      background-size: cover;
+      background-position: center;
+      background-attachment: scroll; /* Cambiado a scroll para que el fondo se mueva con la página */
+      background-repeat: no-repeat;
+      color: #f1ebd9;
+      text-align: center;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ----------------------------------------------------
+        CANVAS DE LLUVIA EN EL FONDO
+    ---------------------------------------------------- */
+    #rain-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ----------------------------------------------------
+        1. PANTALLA DE PORTADA (ESTILO CUERO Y SELLO DE CERA)
+    ---------------------------------------------------- */
+    #cover-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #2b1810;
+      background-image: 
+        radial-gradient(circle, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.85) 100%),
+        repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 2px, transparent 2px, transparent 4px);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform 1s cubic-bezier(0.77, 0, 0.175, 1), opacity 1s ease;
+      overflow: hidden;
+      box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
+    }
+
+    .golden-lines {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .golden-lines::before,
+    .golden-lines::after {
+      content: '';
+      width: 3px;
+      height: 100%;
+      background: linear-gradient(180deg, #997a15 0%, #d4af37 50%, #997a15 100%);
+      box-shadow: 0 0 8px rgba(212, 175, 55, 0.5), 8px 0 0 #3a2216, -8px 0 0 #3a2216;
+    }
+
+    .wax-seal {
+      position: relative;
+      z-index: 10;
+      width: 160px;
+      height: 160px;
+      background: radial-gradient(circle at 30% 30%, #e6e6e6, #a1a1a1 70%, #666666);
+      border-radius: 48% 52% 55% 45% / 45% 50% 50% 55%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 
+        0 15px 35px rgba(0,0,0,0.7),
+        inset 0 3px 6px rgba(255,255,255,0.8),
+        inset 0 -5px 12px rgba(0,0,0,0.5);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      animation: sealPulse 2s infinite alternate;
+    }
+
+    .wax-seal:hover {
+      transform: scale(1.06);
+      box-shadow: 
+        0 20px 40px rgba(0,0,0,0.8),
+        inset 0 3px 8px rgba(255,255,255,0.9),
+        inset 0 -5px 15px rgba(0,0,0,0.6);
+    }
+
+    .wax-seal-inner {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 2px solid rgba(0,0,0,0.15);
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .wax-seal-text {
+      font-family: 'Great Vibes', cursive;
+      font-size: 2.8rem;
+      color: #1a1a1a;
+      text-shadow: 1px 1px 1px rgba(255,255,255,0.4);
+      user-select: none;
+    }
+
+    @keyframes sealPulse {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.03); }
+    }
+
+    .open-cover {
+      transform: translateY(-100vh);
+      opacity: 0;
+    }
+
+    .hide-screen {
+      display: none !important;
+    }
+
+    /* ----------------------------------------------------
+        2. RANITA FLOTANTE PERMANENTE
+    ---------------------------------------------------- */
+    .fixed-frog-container {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 500;
+      pointer-events: none;
+    }
+
+    .frog-img {
+      width: 250px;
+      max-width: 35vw;
+      height: auto;
+      filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.6));
+      animation: float 3.5s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-15px) rotate(3deg); }
+    }
+
+    /* ----------------------------------------------------
+        ESTILOS GENERALES DE LA INVITACIÓN
+    ---------------------------------------------------- */
+    #main-content {
+      position: relative;
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 1s ease 0.5s;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px 15px 80px 15px;
+    }
+
+    .card {
+      background: rgba(12, 28, 20, 0.88);
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      padding: 30px 20px;
+      border-radius: 15px;
+      margin-bottom: 40px;
+      backdrop-filter: blur(8px);
+      position: relative;
+    }
+
+    h1, h2, h3 {
+      font-family: 'Cinzel', serif;
+      color: #d4af37;
+      letter-spacing: 2px;
+    }
+
+    .cursive {
+      font-family: 'Great Vibes', cursive;
+      font-size: 3rem;
+      color: #e6c875;
+      margin: 10px 0;
+    }
+
+    .divider {
+      width: 60%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #d4af37, transparent);
+      margin: 20px auto;
+    }
+
+    .hero-photo-box {
+      width: 100%;
+      height: 350px;
+      border-radius: 12px;
+      border: 2px solid rgba(212, 175, 55, 0.5);
+      overflow: hidden;
+      margin: 20px 0;
+    }
+
+    .hero-photo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ----------------------------------------------------
+        ESTILOS DE LA CUENTA REGRESIVA
+    ---------------------------------------------------- */
+    .countdown-container {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .countdown-box {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      border-radius: 10px;
+      padding: 10px 5px;
+      min-width: 65px;
+    }
+
+    .countdown-number {
+      font-family: 'Cinzel', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #d4af37;
+    }
+
+    .countdown-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #f1ebd9;
+      margin-top: 4px;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .gallery-img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 25px;
+      margin-top: 15px;
+      font-size: 0.9rem;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #d4af37, #997a15);
+      color: #111;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+    }
+
+    .btn-wa {
+      background: linear-gradient(135deg, #25d366, #128c7e);
+      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+      width: 100%;
+      font-size: 1rem;
+      padding: 14px;
+    }
+
+    .btn:hover {
+      transform: scale(1.03);
+    }
+
+    .event-img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-top: 15px;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .music-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #d4af37;
+      color: #111;
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      z-index: 600;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* ----------------------------------------------------
+        TARJETA ESTILO VESTIDO VERDE
+    ---------------------------------------------------- */
+    .card-dress {
+      background: #182e22;
+      background-image: url('vestido_verde.jpg');
+      background-size: cover;
+      background-position: center;
+      min-height: 480px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 40px;
+    }
+
+    .card-dress-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 30, 22, 0.65);
+      z-index: 1;
+    }
+
+    .card-dress-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+    }
+
+    .card-dress-top-frog {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      width: 120px;
+      z-index: 3;
+    }
+
+    .text-italic-quote {
+      font-style: italic;
+      font-size: 1.15rem;
+      color: #ffffff;
+      line-height: 1.6;
+      margin-top: 20px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    .names-highlight {
+      font-family: 'Great Vibes', cursive;
+      font-size: 3.5rem;
+      color: #ffffff;
+      margin: 15px 0;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+      line-height: 1.1;
+    }
+
+    .ornament-divider {
+      width: 70%;
+      margin: 15px auto 0 auto;
+      border-bottom: 2px solid #d4af37;
+      position: relative;
+    }
+
+    .ornament-divider::after {
+      content: '❖';
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #112017;
+      padding: 0 8px;
+      color: #d4af37;
+      font-size: 0.8rem;
+    }
+
+    /* ----------------------------------------------------
+        TARJETA COLOR RESERVADO
+    ---------------------------------------------------- */
+    .card-reserved-color {
+      background: rgba(161, 200, 101, 0.95);
+      color: #1a230d;
+      padding: 35px 20px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      margin-bottom: 40px;
+      backdrop-filter: blur(6px);
+    }
+
+    .reserved-title {
+      font-family: 'Great Vibes', cursive;
+      font-size: 3rem;
+      color: #111a08;
+      margin-bottom: 15px;
+      line-height: 1.2;
+    }
+
+    .reserved-text {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.15rem;
+      color: #111a08;
+      line-height: 1.5;
+      font-weight: 500;
+    }
+
+    /* ----------------------------------------------------
+        TARJETA REGALOS
+    ---------------------------------------------------- */
+    .card-gifts {
+      background: rgba(93, 111, 70, 0.95);
+      color: #1a2614;
+      padding: 35px 25px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      margin-bottom: 40px;
+      backdrop-filter: blur(6px);
+    }
+
+    .gifts-title {
+      font-family: 'Great Vibes', cursive;
+      font-size: 3.5rem;
+      color: #1a2918;
+      margin-bottom: 15px;
+    }
+
+    .gifts-text {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.05rem;
+      color: #162214;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    /* ----------------------------------------------------
+        FORMULARIO DE CONFIRMACIÓN
+    ---------------------------------------------------- */
+    .form-group {
+      text-align: left;
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: #e6c875;
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 15px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.3s, background-color 0.3s;
+    }
+
+    .form-input:focus {
+      border-color: #d4af37;
+      background: rgba(0, 0, 0, 0.7);
+    }
+
+    textarea.form-input {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .attendance-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .option-card {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .option-card input[type="radio"] {
+      margin-right: 12px;
+      accent-color: #d4af37;
+      transform: scale(1.2);
+    }
+
+    .option-card:hover, .option-card.active {
+      background: rgba(212, 175, 55, 0.4);
+      border-color: #d4af37;
+    }
+
+    .contact-footer {
+      margin-top: 25px;
+      font-size: 0.85rem;
+      color: #ccc;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- CANVAS DE LLUVIA ANIMADA EN SEGUNDO PLANO -->
+  <canvas id="rain-canvas"></canvas>
+
+  <!-- Reproductor de Audio -->
+  <audio id="bg-music" loop preload="auto">
+    <source src="cancion.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Botón Flotante para Audio -->
+  <button class="music-btn" onclick="toggleMusic()" id="music-btn" aria-label="Controlar Música">🎵</button>
+
+  <!-- 1. PANTALLA DE APERTURA CON ESTILO CUERO Y SELLO -->
+  <div id="cover-screen">
+    <div class="golden-lines"></div>
+    <div class="wax-seal" onclick="openInvitation()">
+      <div class="wax-seal-inner">
+        <span class="wax-seal-text">Abrir</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. RANITA FLOTANTE PERMANENTE -->
+  <div class="fixed-frog-container">
+    <img src="ranitaflotante.png" alt="Ranita flotante" class="frog-img">
+  </div>
+
+  <!-- CONTENIDO PRINCIPAL DESLIZABLE -->
+  <main id="main-content">
+
+    <!-- SECCIÓN 2: BIENVENIDA Y FOTO PRINCIPAL -->
+    <section class="card">
+      <h1>Mis XV Años</h1>
+      <div class="cursive">Thaily & Emir</div>
+
+      <div class="hero-photo-box">
+        <img src="foto_portada.jpg" alt="Thaily y Emir" class="hero-photo">
+      </div>
+
+      <p style="font-size: 0.9rem; font-style: italic; color: #ccc;">
+        "Hay momentos inolvidables que se atesoran en el corazón para siempre"
+      </p>
+
+      <!-- SECCIÓN DE CUENTA REGRESIVA -->
+      <div class="divider"></div>
+      <h3 style="font-size: 0.95rem; font-weight: 400; color: #e6c875; margin-bottom: 5px;">Faltan</h3>
+      <div class="countdown-container">
+        <div class="countdown-box">
+          <div id="days" class="countdown-number">00</div>
+          <div class="countdown-label">Días</div>
+        </div>
+        <div class="countdown-box">
+          <div id="hours" class="countdown-number">00</div>
+          <div class="countdown-label">Hs</div>
+        </div>
+        <div class="countdown-box">
+          <div id="minutes" class="countdown-number">00</div>
+          <div class="countdown-label">Min</div>
+        </div>
+        <div class="countdown-box">
+          <div id="seconds" class="countdown-number">00</div>
+          <div class="countdown-label">Seg</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN ESTILO VESTIDO VERDE -->
+    <section class="card-dress">
+      <div class="card-dress-overlay"></div>
+      <img src="ranita.png" alt="Ranita decorativa" class="card-dress-top-frog">
+      
+      <div class="card-dress-content">
+        <p class="text-italic-quote">
+          Vivimos muchos momentos juntos y siempre estuviste presente.
+        </p>
+        <p class="text-italic-quote" style="font-weight: 600; margin-top: 10px;">
+          ¡No puedes faltar a nuestra Fiesta de XV!
+        </p>
+
+        <div class="names-highlight">
+          Thaily y Emir
+        </div>
+
+        <div class="ornament-divider"></div>
+
+        <p class="text-italic-quote" style="margin-top: 25px; font-size: 0.95rem; padding: 0 10px;">
+          "Queremos compartir la alegría de celebrar juntos este capítulo tan especial de nuestras vidas. Su presencia hará que esta noche sea inolvidable y mágica para nosotros."
+        </p>
+      </div>
+    </section>
+
+    <!-- SECCIÓN COLOR RESERVADO -->
+    <section class="card-reserved-color">
+      <div class="reserved-title">Color Reservado para<br>la Quinceañera</div>
+      <p class="reserved-text">
+        El color verde estará reservado exclusivamente para Thaily.
+      </p>
+    </section>
+
+    <!-- SECCIÓN DE REGALOS -->
+    <section class="card-gifts">
+      <div class="gifts-title">Regalos</div>
+      <p class="gifts-text">
+        El regalo es opcional, la asistencia obligatoria. Si deseas tener un detalle con nosotros, una lluvia de sobres será bien recibida.
+      </p>
+    </section>
+
+    <!-- SECCIÓN 4: GALERÍA DE FOTOS (RECUERDOS) -->
+    <section class="card">
+      <h2>Recuerdos</h2>
+      <div class="divider"></div>
+      <div class="gallery-grid">
+        <img src="foto1.jpeg" alt="Recuerdo Thaily y Emir 1" class="gallery-img">
+        <img src="foto2.jpeg" alt="Recuerdo Thaily y Emir 2" class="gallery-img">
+        <img src="foto3.jpeg" alt="Recuerdo Thaily y Emir 3" class="gallery-img">
+        <img src="foto4.jpeg" alt="Recuerdo Thaily y Emir 4" class="gallery-img">
+      </div>
+    </section>
+
+    <!-- SECCIÓN: MIS FOTOS -->
+    <section class="card">
+      <h2 class="cursive" style="font-size: 3.2rem; margin: 0;">Mis fotos</h2>
+      <div class="divider"></div>
+      <div class="gallery-grid">
+        <img src="foto5.jpeg" alt="Foto personal 1" class="gallery-img">
+        <img src="foto6.jpeg" alt="Foto personal 2" class="gallery-img">
+        <img src="foto7.jpeg" alt="Foto personal 3" class="gallery-img">
+        <img src="foto8.jpeg" alt="Foto personal 4" class="gallery-img">
+      </div>
+    </section>
+
+    <!-- SECCIÓN: MENSAJE ESPECIAL -->
+    <section class="card">
+      <h2>Mensaje Especial</h2>
+      <div class="cursive" style="font-size: 2.2rem; margin-top: 5px;">Thaily y Emir</div>
+      <div class="divider"></div>
+      <div style="line-height: 1.7; font-size: 0.95rem; color: #e0d8c3; text-align: justify; padding: 0 10px;">
+        <p style="margin-bottom: 15px;">
+          Hoy celebramos mucho más que sus XV años; celebramos la maravillosa historia que han escrito juntos desde el primer día de sus vidas.
+        </p>
+        <p style="margin-bottom: 15px;">
+          Han crecido tomados de la mano, compartiendo sonrisas, aprendizajes y momentos que quedarán por siempre en nuestros corazones. Que esta nueva etapa esté llena de sueños cumplidos, valentía para enfrentar cada reto y amor para disfrutar cada instante.
+        </p>
+        <p style="margin-bottom: 15px;">
+          Nunca dejen de creer en ustedes, de cuidar el uno del otro y de recordar que la familia siempre será el lugar donde encontrarán fuerza para seguir adelante.
+        </p>
+        <p style="margin-bottom: 20px;">
+          Que esta noche quede grabada en su corazón como el inicio de un futuro lleno de felicidad, esperanza y grandes recuerdos.
+        </p>
+        <p style="text-align: center; font-style: italic; color: #d4af37; font-weight: 600; font-size: 1.05rem;">
+          Con todo nuestro amor.
+        </p>
+      </div>
+    </section>
+
+    <!-- SECCIÓN 5: PAPÁS Y PADRINOS -->
+    <section class="card">
+      <h2>Con la Bendición de</h2>
+      <div class="divider"></div>
+
+      <h3 style="font-size: 1rem; color: #e6c875; margin-top: 10px;">Nuestros Padres</h3>
+      <p style="margin-top: 5px;">Luis Carlos</p>
+      <p>&</p>
+      <p>Jessica</p>
+
+      <h3 style="font-size: 1rem; color: #e6c875; margin-top: 20px;">Nuestros Padrinos</h3>
+      <p style="margin-top: 5px;">Miguel Alejandro</p>
+      <p>&</p>
+      <p>Adela</p>
+
+      <p style="font-size: 0.85rem; font-style: italic; margin-top: 20px; color: #aaa;">
+        "Gracias por guiarnos y apoyarnos con tanto amor en cada paso del camino."
+      </p>
+    </section>
+
+    <!-- SECCIÓN 6: DÓNDE Y CUÁNDO - MISA -->
+    <section class="card">
+      <h2>Ceremonia Religiosa</h2>
+      <div class="divider"></div>
+      <p><b>Fecha:</b> 24 de Octubre de 2026</p>
+      <p><b>Hora:</b> 5:00 PM</p>
+      <p><b>Lugar:</b> Parroquia Jesus Buen Pastor</p>
+
+      <img src="iglesia.jpg" alt="Iglesia de la ceremonia" class="event-img">
+
+      <br>
+      <a href="https://maps.app.goo.gl/MEvX1UsMNpV24p1t8" target="_blank" rel="noopener" class="btn btn-gold">
+        📍 Ver Ubicación de la Misa
+      </a>
+    </section>
+
+    <!-- SECCIÓN 7: DÓNDE Y CUÁNDO - RECEPCIÓN -->
+    <section class="card">
+      <h2>Recepción</h2>
+      <div class="divider"></div>
+      <p><b>Fecha:</b> 24 de Octubre de 2026</p>
+      <p><b>Hora:</b> 9:00 PM</p>
+      <p><b>Lugar:</b> Salón Alara</p>
+
+      <img src="salon.jpg" alt="Salón Alara" class="event-img">
+
+      <br>
+      <a href="https://maps.app.goo.gl/cn2jzxxBbmHFguf58" target="_blank" rel="noopener" class="btn btn-gold">
+        📍 Ver Ubicación del Salón
+      </a>
+    </section>
+
+    <!-- SECCIÓN 8: FORMULARIO DE CONFIRMACIÓN DE ASISTENCIA -->
+    <section class="card">
+      <h2>Confirmar asistencia</h2>
+      <div class="divider"></div>
+
+      <form id="rsvp-form" onsubmit="sendToWhatsApp(event)">
+        <div class="form-group">
+          <label for="name">Nombre</label>
+          <input type="text" id="name" class="form-input" placeholder="Tu nombre completo" required>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">WhatsApp</label>
+          <input type="tel" id="phone" class="form-input" placeholder="Tu número de teléfono" required>
+        </div>
+
+        <div class="form-group">
+          <label>¿Asistirás?</label>
+          <div class="attendance-options">
+            <label class="option-card active">
+              <input type="radio" name="attendance" value="Acepto con mucho gusto" checked onclick="updateOptionStyle(this)">
+              <span>Acepto con mucho gusto</span>
+            </label>
+            <label class="option-card">
+              <input type="radio" name="attendance" value="Lamentablemente no puedo asistir" onclick="updateOptionStyle(this)">
+              <span>Lamentablemente no puedo asistir</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="guests-count">Acompañantes (número)</label>
+          <input type="number" id="guests-count" class="form-input" min="0" value="0">
+        </div>
+
+        <div class="form-group">
+          <label for="guests-names">Nombres de acompañantes</label>
+          <textarea id="guests-names" class="form-input" placeholder="Escribe los nombres aquí..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-wa">Confirmar asistencia</button>
+      </form>
+
+      <div class="contact-footer">
+        <p>Para cualquier duda o aclaración, favor de comunicarse al contacto directo.</p>
+        <a href="https://api.whatsapp.com/send?phone=526141514036&text=Hola,%20tengo%20una%20duda%20sobre%20el%20evento" target="_blank" rel="noopener" class="btn btn-gold" style="margin-top: 10px; font-size: 0.85rem;">
+          Contacto directo aquí
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SCRIPT INTERACTIVO Y EFECTO DE LLUVIA -->
+  <script>
+    /* ----------------------------------------------------
+        EFECTO DE LLUVIA ANIMADA
+    ---------------------------------------------------- */
+    const canvas = document.getElementById("rain-canvas");
+    const ctx = canvas.getContext("2d");
+
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener("resize", () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    const numDrops = 90;
+    const drops = [];
+
+    for (let i = 0; i < numDrops; i++) {
+      drops.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        length: Math.random() * 20 + 10,
+        speed: Math.random() * 10 + 8,
+        opacity: Math.random() * 0.4 + 0.1
+      });
+    }
+
+    function drawRain() {
+      ctx.clearRect(0, 0, width, height);
+
+      for (let i = 0; i < numDrops; i++) {
+        const d = drops[i];
+
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(212, 175, 55, ${d.opacity})`;
+        ctx.lineWidth = 1;
+        ctx.moveTo(d.x, d.y);
+        ctx.lineTo(d.x - d.length * 0.1, d.y + d.length);
+        ctx.stroke();
+
+        d.y += d.speed;
+        d.x -= d.speed * 0.1;
+
+        if (d.y > height) {
+          d.y = -d.length;
+          d.x = Math.random() * width;
+        }
+      }
+
+      requestAnimationFrame(drawRain);
+    }
+
+    drawRain();
+
+    /* ----------------------------------------------------
+        LÓGICA GENERAL DE LA INVITACIÓN
+    ---------------------------------------------------- */
+    const music = document.getElementById("bg-music");
+    const musicBtn = document.getElementById("music-btn");
+
+    function openInvitation() {
+      const coverScreen = document.getElementById("cover-screen");
+      const mainContent = document.getElementById("main-content");
+      
+      coverScreen.classList.add("open-cover");
+
+      music.play().then(() => {
+        musicBtn.innerText = "⏸️";
+      }).catch(err => {
+        console.log("Autoplay bloqueado o archivo no encontrado:", err);
+      });
+
+      setTimeout(() => {
+        coverScreen.classList.add("hide-screen");
+        mainContent.style.opacity = "1";
+      }, 900);
+    }
+
+    function toggleMusic() {
+      if (music.paused) {
+        music.play();
+        musicBtn.innerText = "⏸️";
+      } else {
+        music.pause();
+        musicBtn.innerText = "🎵";
+      }
+    }
+
+    function updateOptionStyle(radioEl) {
+      document.querySelectorAll('.option-card').forEach(card => card.classList.remove('active'));
+      radioEl.closest('.option-card').classList.add('active');
+    }
+
+    function sendToWhatsApp(e) {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const attendance = document.querySelector('input[name="attendance"]:checked').value;
+      const guestsCount = document.getElementById("guests-count").value.trim() || "0";
+      const guestsNames = document.getElementById("guests-names").value.trim() || "Ninguno";
+
+      let text = `*CONFIRMACIÓN DE ASISTENCIA - XV THAILY & EMIR*\n\n`;
+      text += `👤 *Nombre:* ${name}\n`;
+      text += `📱 *WhatsApp:* ${phone}\n`;
+      text += `💌 *¿Asistirá?:* ${attendance}\n`;
+      text += `👥 *Acompañantes:* ${guestsCount}\n`;
+      text += `📝 *Nombres:* ${guestsNames}`;
+
+      const targetPhoneNumber = "526141514036";
+      const waURL = `https://api.whatsapp.com/send?phone=${targetPhoneNumber}&text=${encodeURIComponent(text)}`;
+
+      window.open(waURL, "_blank");
+    }
+
+    /* LÓGICA DE LA CUENTA REGRESIVA */
+    const targetDate = new Date("October 24, 2026 21:00:00").getTime();
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const difference = targetDate - now;
+
+      if (difference > 0) {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+        document.getElementById("days").innerText = days < 10 ? '0' + days : days;
+        document.getElementById("hours").innerText = hours < 10 ? '0' + hours : hours;
+        document.getElementById("minutes").innerText = minutes < 10 ? '0' + minutes : minutes;
+        document.getElementById("seconds").innerText = seconds < 10 ? '0' + seconds : seconds;
+      } else {
+        document.getElementById("days").innerText = "00";
+        document.getElementById("hours").innerText = "00";
+        document.getElementById("minutes").innerText = "00";
+        document.getElementById("seconds").innerText = "00";
+      }
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+  </script>
+
+</body>
+</html>
